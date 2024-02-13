@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  serviceName: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+        selector: mongo
+    spec:
+      containers:
+      - env:
+        - name: MONGO_INITDB_ROOT_USERNAME_FILE
+          value: /etc/k8-creds/admin/MONGO_ROOT_USERNAME
+        - name: MONGO_INITDB_ROOT_PASSWORD_FILE
+          value: /etc/k8-creds/admin/MONGO_ROOT_PASSWORD
+        image: mongo:latest
+        imagePullPolicy: IfNotPresent
+        name: mongo
+        volumeMounts:
+        - mountPath: /etc/k8-creds
+          name: k8-creds
+          readOnly: true
+        - mountPath: /data/db
+          name: mongo-data
+      volumes:
+      - name: k8-creds
+        secret:
+          secretName: mongo-creds
+  volumeClaimTemplates:
+    metadata:
+      name: mongodb-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: mongo-sc
+      volumeMode: Filesystem
