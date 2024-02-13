@@ -31,6 +31,8 @@ spec:
             secretKeyRef:
               key: password
               name: postgres-creds
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         image: postgres:11
         imagePullPolicy: IfNotPresent
         name: postgres
@@ -39,6 +41,9 @@ spec:
           protocol: TCP
       # imagePullSecrets:
       # - name: dockerhub-pvt-registry-creds
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data/pgdata
+          name: postgres-pvc
       volumes:
       - name: postgres-pvc
         persistentVolumeClaim:
